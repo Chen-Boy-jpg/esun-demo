@@ -179,7 +179,12 @@ const getImageUrl = (url: string | null | undefined) => {
 };
 
 const goToDetail = (post: EnhancedPost) => {
-  router.push({ name: 'post-detail', params: { id: post.postId.toString() } });
+  router.push({ 
+    name: 'post-detail', 
+    params: { id: post.postId.toString() },
+    // ✅ 使用 state 把整包 post 資料帶過去
+    state: { postData: JSON.parse(JSON.stringify(post)) } 
+  });
 };
 
 const goToEditPost = (post: EnhancedPost) => {

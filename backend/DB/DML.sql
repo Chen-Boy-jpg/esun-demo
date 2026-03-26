@@ -1,40 +1,43 @@
 -- ==========================================
--- 1. 插入測試使用者 (Users)
--- 密碼部分：假設你的程式使用 BCrypt，這裡提供預設加密後的字串
--- 測試帳號 1: 0912345678 / password123
--- 測試帳號 2: 0987654321 / password123
+-- 1. 新增 3 位測試使用者 (使用你的 Procedure)
 -- ==========================================
-
-INSERT INTO users (user_name, phone_number, password_hash, email, biography, cover_image)
-VALUES 
-('玉山小襄', '0912345678', '$2a$10$7p6Xp6Xp6Xp6Xp6Xp6Xp6uR8X1X1X1X1X1X1X1X1X1X1X1X1X1X1X', 'hc@esunbank.com.tw', '熱愛 Java 開發的工程師', 'cover_01.jpg'),
-('金融小金', '0987654321', '$2a$10$7p6Xp6Xp6Xp6Xp6Xp6Xp6uR8X1X1X1X1X1X1X1X1X1X1X1X1X1X1X', 'gold@esunbank.com.tw', '理財專家', 'cover_02.jpg')
-ON CONFLICT (phone_number) DO NOTHING;
+-- 密碼統一設為 'password123' (實際開發建議由後端加密，這裡僅作資料填充)
+CALL register_user('阿龍', '0911111111', 'password123', 'along@email.com', '熱愛攝影與生活分享。', '/uploads/avatars/user1.jpg');
+CALL register_user('美美', '0922222222', 'password123', 'meimei@email.com', '前端工程師 / 貓奴 / 甜點愛好者', '/uploads/avatars/user2.jpg');
+CALL register_user('小傑', '0933333333', 'password123', 'jay@email.com', '打球、追劇、寫 Java', '/uploads/avatars/user3.jpg');
 
 -- ==========================================
--- 2. 插入測試貼文 (Posts)
--- 這裡對應剛剛創立的使用者 ID (1 和 2)
+-- 2. 新增 5 則測試貼文 (模擬不同情境)
 -- ==========================================
 
-INSERT INTO posts (user_id, content, image, created_at)
-VALUES 
-(1, '大家好！這是我的第一篇社群貼文，使用的是 Spring Boot 加上 PostgreSQL 預存程序開發。', 'post_01.jpg', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-(2, '今天玉山銀行的理財講座非常精彩，收穫滿滿！', 'post_02.jpg', CURRENT_TIMESTAMP - INTERVAL '2 hours');
+-- 阿龍發布：風景圖
+CALL create_post('0911111111', '今天去爬山，空氣真的很好！推薦大家假日多出來走走。', '/uploads/posts/mountain.jpg');
+
+-- 美美發布：工作心情 (純文字)
+CALL create_post('0922222222', '今天寫 Vue 遇到一個卡很久的 Bug，最後發現竟然是少寫一個括號... 大家寫 Code 要細心點 Q_Q', NULL);
+
+-- 小傑發布：食物圖
+CALL create_post('0933333333', '下班後來一碗拉麵，這就是工程師的浪漫。', '/uploads/posts/ramen.jpg');
+
+-- 阿龍發布：攝影作品
+CALL create_post('0911111111', '分享一張昨天拍到的夕陽，無濾鏡直出。', '/uploads/posts/sunset.jpg');
+
+-- 美美發布：活動宣傳
+CALL create_post('0922222222', '這週末有人要一起去技術研討會嗎？這屆的講師陣容很強喔！', '/uploads/posts/conf.jpg');
 
 -- ==========================================
--- 3. 插入測試留言 (Comments)
--- 這裡對應貼文 ID 與使用者 ID
+-- 3. 新增測試留言 (模擬互動)
 -- ==========================================
 
-INSERT INTO comments (post_id, user_id, content, created_at)
-VALUES 
-(1, 2, '寫得太棒了！預存程序在金融系統真的很重要。', CURRENT_TIMESTAMP - INTERVAL '20 minutes'),
-(2, 1, '我也想參加，下次有講座請記得分享！', CURRENT_TIMESTAMP - INTERVAL '5 minutes');
+-- 假設剛剛生成的 Post ID 依序是 1, 2, 3, 4, 5
+-- 美美回覆阿龍的山景圖 (Post ID: 1)
+CALL create_comment(1, '0922222222', '照片拍得太美了吧！');
 
--- ==========================================
--- 4. 驗證資料的 SQL (僅供參考，不需放入 data.sql)
--- ==========================================
--- SELECT u.user_name, p.content, c.content as comment_content
--- FROM users u
--- JOIN posts p ON u.user_id = p.user_id
--- JOIN comments c ON p.post_id = c.post_id;
+-- 小傑回覆美美的 Bug 貼文 (Post ID: 2)
+CALL create_comment(2, '0933333333', '我也常幹這種事，拍拍（握手）。');
+
+-- 阿龍回覆小傑的拉麵 (Post ID: 3)
+CALL create_comment(3, '0911111111', '這家在哪？求店名！');
+
+-- 小傑回覆自己的拉麵 (Post ID: 3)
+CALL create_comment(3, '0933333333', '在捷運中山站附近，私訊你！');
