@@ -22,23 +22,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. 從 Header 拿 Token (通常格式是 Authorization: Bearer <TOKEN>)
+        // 1. 取得請求路徑
+        String path = request.getServletPath();
+
+        // 2. ⚡ 如果是公開路徑，直接放行，不跑後面的 Token 檢查邏輯
+        if (path.contains("/auth/") || path.startsWith("/uploads/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // --- 以下是原本的 Token 檢查邏輯 ---
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            String phone = jwtUtils.extractUsername(token); // 需要在 JwtUtils 補上這個方法
+            try {
+                String token = authHeader.substring(7);
+                String phone = jwtUtils.extractUsername(token);
 
-            // 在 JwtAuthenticationFilter 裡的 doFilterInternal 方法中
-            if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // 加上驗證邏輯
-                if (jwtUtils.validateToken(token, phone)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(phone, null,
-                            new ArrayList<>());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (phone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    if (jwtUtils.validateToken(token, phone)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                phone, null, new ArrayList<>());
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            } catch (Exception e) {
+                // 解析失敗不報錯，交給 SecurityConfig 決定是否攔截
+                logger.error("JWT validation failed: " + e.getMessage());
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

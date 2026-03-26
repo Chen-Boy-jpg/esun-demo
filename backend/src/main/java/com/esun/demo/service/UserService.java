@@ -13,6 +13,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.nio.file.*;
 
@@ -104,6 +105,12 @@ public class UserService {
                     imagePath);
             return "個人資料更新成功 (via SP)";
         } catch (Exception e) {
+            if (TransactionAspectSupport.currentTransactionStatus() != null) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            }
+
+            // 印出錯誤到 Log，方便我們看真兇
+            System.err.println("更新失敗真兇: " + e.getMessage());
             return "更新失敗：" + e.getMessage();
         }
     }

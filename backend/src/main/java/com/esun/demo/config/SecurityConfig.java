@@ -3,17 +3,24 @@ package com.esun.demo.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // 修正：建議直接 import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.esun.demo.exception.JwtAuthenticationException;
 
+import java.util.Arrays;
+
 @Configuration
+@EnableWebSecurity // ✅ 建議加上這個註解
 public class SecurityConfig {
 
-    // 注入密碼加密器，讓 Service 可以使用
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -23,21 +30,43 @@ public class SecurityConfig {
     private JwtAuthenticationFilter jwtFilter;
 
     @Autowired
-    private JwtAuthenticationException authException; // 1. 注入剛寫好的類別
+    private JwtAuthenticationException authException;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authException) // 2. 設定進入點
-                )
+        http
+                // 1. 關閉 CSRF
+                .csrf(csrf -> csrf.disable())
+
+                // 2. 加入 CORS 配置 (選配，但建議加上)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3. 異常處理
+                // .exceptionHandling(exception -> exception
+                // .authenticationEntryPoint(authException))
+
+                // 4. 路徑權限設定
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll() // 允許所有人讀取圖片
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/posts/**", "/api/comments/**")
-                        .permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll() // 圖片路徑
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/comments/**").permitAll()
                         .anyRequest().authenticated())
+
+                // 5. JWT 過濾器順序
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
+    }
+
+    // CORS 設定：允許來自前端容器的請求
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList("*")); // 開發階段可設為 *
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

@@ -6,6 +6,7 @@ import com.esun.demo.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -63,12 +64,26 @@ public class PostService {
      */
     @Transactional
     public String createNewPost(String phone, PostRequest req) {
-        String imagePath = saveImage(req.getImage()); // 處理圖片存檔
+        // 1. 處理圖片存檔 (把檢查邏輯封裝在 saveImage 或直接在這裡判斷)
+        String imagePath = null;
+        if (req.getImage() != null && !req.getImage().isEmpty()) {
+            try {
+                imagePath = saveImage(req.getImage());
+            } catch (Exception e) {
+                // 如果圖片儲存失敗，可以選擇直接回傳錯誤
+                return "圖片儲存失敗：" + e.getMessage();
+            }
+        }
 
+        // 2. 呼叫資料庫預存程序
         try {
             postRepository.createPost(phone, req.getContent(), imagePath);
             return "貼文發布成功";
         } catch (Exception e) {
+            // ⭐ 重要：手動標記事務回滾，避免 Transaction 狀態衝突導致 500 錯誤
+            if (TransactionAspectSupport.currentTransactionStatus() != null) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            }
             return "發布失敗：" + e.getMessage();
         }
     }
@@ -110,21 +125,32 @@ public class PostService {
      * 改良點：1. 僅保留副檔名避免編碼問題 2. 確保異常處理完全閉合
      */
     private String saveImage(MultipartFile file) {
+
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
         try {
-            // 1. 確保路徑包含 posts
+
+            // 如果你一定要用目前的相對路徑，請確保資料夾存在
             Path uploadPath = Paths.get("src/main/resources/static/uploads/posts").toAbsolutePath();
+
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
+            // 3. 檔名生成
             String fileName = UUID.randomUUID().toString() + ".png";
             Path filePath = uploadPath.resolve(fileName);
 
+            // 4. 只有確定 file 不為 null 才會執行 getInputStream()
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // 2. 回傳網址必須與 WebConfig 匹配
+            // 5. 回傳對應 WebConfig 映射的網址路徑
             return "/uploads/posts/" + fileName;
+
         } catch (IOException e) {
+            // 拋出 RuntimeException 會觸發 Service 層的事務回滾
             throw new RuntimeException("儲存失敗: " + e.getMessage());
         }
     }
