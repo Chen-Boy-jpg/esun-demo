@@ -105,28 +105,27 @@ public class PostService {
     /**
      * 輔助方法：處理圖片存檔並回傳相對路徑
      */
+    /**
+     * 輔助方法：處理圖片存檔並回傳相對路徑
+     * 改良點：1. 僅保留副檔名避免編碼問題 2. 確保異常處理完全閉合
+     */
     private String saveImage(MultipartFile file) {
-        if (file == null || file.isEmpty())
-            return null;
-
         try {
-            // 確保資料夾存在
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            // 1. 確保路徑包含 posts
+            Path uploadPath = Paths.get("src/main/resources/static/uploads/posts").toAbsolutePath();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // 產生唯一檔名，避免重複 (UUID + 原檔名)
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String fileName = UUID.randomUUID().toString() + ".png";
             Path filePath = uploadPath.resolve(fileName);
 
-            // 執行複製動作
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // 回傳存入資料庫的路徑 (前端存取用)
+            // 2. 回傳網址必須與 WebConfig 匹配
             return "/uploads/posts/" + fileName;
         } catch (IOException e) {
-            throw new RuntimeException("無法儲存圖片檔案: " + e.getMessage());
+            throw new RuntimeException("儲存失敗: " + e.getMessage());
         }
     }
 }

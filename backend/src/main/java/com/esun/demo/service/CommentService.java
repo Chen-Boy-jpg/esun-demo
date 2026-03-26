@@ -5,7 +5,7 @@ import com.esun.demo.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.esun.demo.entity.Comment;
 import java.util.List;
 
 @Service
@@ -30,13 +30,15 @@ public class CommentService {
     }
 
     public List<CommentResponse> getAllComments() {
-        List<Object[]> results = commentRepository.findAllCommentsNative();
-        return results.stream().map(result -> new CommentResponse(
-                ((Number) result[0]).longValue(), // comment_id
-                ((Number) result[1]).longValue(), // post_id
-                ((Number) result[2]).longValue(), // user_id
-                (String) result[3], // content
-                ((java.sql.Timestamp) result[4]).toLocalDateTime() // created_at
+        // 現在 results 是 List<Comment>，裡面的 result 是 Comment 物件
+        List<Comment> results = commentRepository.findAllCommentsNative();
+
+        return results.stream().map(comment -> new CommentResponse(
+                comment.getCommentId(), // comment_id
+                comment.getPost().getPostId(), // post_id (從關聯的 Post 物件取得)
+                comment.getUser().getUserId(), // user_id (從關聯的 User 物件取得)
+                comment.getContent(), // content
+                comment.getCreatedAt() // created_at (已經是 LocalDateTime)
         )).toList();
     }
 }

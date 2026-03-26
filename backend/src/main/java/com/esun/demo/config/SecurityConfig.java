@@ -33,7 +33,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll() // 允許所有人讀取圖片
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/posts/**", "/api/comments/**")
                         .permitAll()
                         .anyRequest().authenticated())
