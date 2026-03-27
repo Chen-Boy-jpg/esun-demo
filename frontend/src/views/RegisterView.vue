@@ -1,45 +1,41 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
-import { RegisterRequestSchema } from '../types/auth';
-import { AuthService } from '../services/auth.service';
+import { useRouter } from "vue-router";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import { RegisterRequestSchema } from "../types/auth";
+import { AuthService } from "../services/auth.service";
 
 const router = useRouter();
 
-// 1. 初始化表單並綁定 Zod Schema
+//  初始化表單並綁定 Zod Schema
 const { values, errors, defineField, handleSubmit, isSubmitting } = useForm({
   validationSchema: toTypedSchema(RegisterRequestSchema),
-  // 設定初始值，確保符合 RegisterRequest 型別
+
   initialValues: {
-    userName: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  }
+    userName: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  },
 });
 
-// 2. 定義欄位與驗證屬性
-// defineField 會回傳 modelValue 與相關事件（如 blur）
-const [userName, userNameProps] = defineField('userName');
-const [phoneNumber, phoneProps] = defineField('phoneNumber');
-const [email, emailProps] = defineField('email');
-const [password, passwordProps] = defineField('password');
-const [confirmPassword, confirmProps] = defineField('confirmPassword');
+//  定義欄位與驗證屬性
+const [userName, userNameProps] = defineField("userName");
+const [phoneNumber, phoneProps] = defineField("phoneNumber");
+const [email, emailProps] = defineField("email");
+const [password, passwordProps] = defineField("password");
+const [confirmPassword, confirmProps] = defineField("confirmPassword");
 
-// 3. 處理註冊提交
+//  處理註冊提交
 const onSubmit = handleSubmit(async (formValues) => {
   try {
-    // 呼叫 Service 進行 API 請求
     const response = await AuthService.register(formValues);
-    
-    alert(response.message || '註冊成功！將跳轉至登入頁面');
-    
-    // 成功後導向登入頁
-    router.push('/login');
+
+    alert(response.message || "註冊成功！將跳轉至登入頁面");
+
+    router.push("/login");
   } catch (err: any) {
-    // 這裡會抓到 api.ts 攔截器拋出的 Error(errorMessage)
     alert(`註冊失敗：${err.message}`);
   }
 });
@@ -54,9 +50,9 @@ const onSubmit = handleSubmit(async (formValues) => {
       <form @submit="onSubmit" class="register-form">
         <div class="form-item">
           <label>使用者名稱</label>
-          <input 
-            v-model="userName" 
-            v-bind="userNameProps" 
+          <input
+            v-model="userName"
+            v-bind="userNameProps"
             placeholder="例如：小明"
             :class="{ 'input-error': errors.userName }"
           />
@@ -65,9 +61,9 @@ const onSubmit = handleSubmit(async (formValues) => {
 
         <div class="form-item">
           <label>手機號碼</label>
-          <input 
-            v-model="phoneNumber" 
-            v-bind="phoneProps" 
+          <input
+            v-model="phoneNumber"
+            v-bind="phoneProps"
             placeholder="0912345678"
             :class="{ 'input-error': errors.phoneNumber }"
           />
@@ -76,9 +72,9 @@ const onSubmit = handleSubmit(async (formValues) => {
 
         <div class="form-item">
           <label>電子信箱</label>
-          <input 
-            v-model="email" 
-            v-bind="emailProps" 
+          <input
+            v-model="email"
+            v-bind="emailProps"
             type="email"
             placeholder="example@mail.com"
             :class="{ 'input-error': errors.email }"
@@ -88,9 +84,9 @@ const onSubmit = handleSubmit(async (formValues) => {
 
         <div class="form-item">
           <label>密碼</label>
-          <input 
-            v-model="password" 
-            v-bind="passwordProps" 
+          <input
+            v-model="password"
+            v-bind="passwordProps"
             type="password"
             placeholder="至少 6 個字元"
             :class="{ 'input-error': errors.password }"
@@ -100,9 +96,9 @@ const onSubmit = handleSubmit(async (formValues) => {
 
         <div class="form-item">
           <label>確認密碼</label>
-          <input 
-            v-model="confirmPassword" 
-            v-bind="confirmProps" 
+          <input
+            v-model="confirmPassword"
+            v-bind="confirmProps"
             type="password"
             placeholder="請再次輸入密碼"
             :class="{ 'input-error': errors.confirmPassword }"
@@ -111,7 +107,7 @@ const onSubmit = handleSubmit(async (formValues) => {
         </div>
 
         <button type="submit" class="submit-btn" :disabled="isSubmitting">
-          {{ isSubmitting ? '註冊中...' : '立即註冊' }}
+          {{ isSubmitting ? "註冊中..." : "立即註冊" }}
         </button>
 
         <div class="auth-link">
@@ -137,12 +133,19 @@ const onSubmit = handleSubmit(async (formValues) => {
   padding: 2.5rem;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   border: 1px solid #f0f0f0;
 }
 
-h2 { margin-bottom: 0.5rem; color: #333; }
-.subtitle { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+.subtitle {
+  color: #888;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
 
 .form-item {
   margin-bottom: 1.2rem;
@@ -199,8 +202,13 @@ input:focus {
   transition: background 0.3s;
 }
 
-.submit-btn:hover { background-color: #3aa876; }
-.submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+.submit-btn:hover {
+  background-color: #3aa876;
+}
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 
 .auth-link {
   margin-top: 1.5rem;

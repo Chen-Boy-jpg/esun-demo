@@ -24,7 +24,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 回應攔截器：處理 GlobalExceptionHandler 的格式
+// 回應攔截器
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<any>) => {
@@ -33,10 +33,8 @@ api.interceptors.response.use(
 
     if (status === 401) {
       localStorage.removeItem("token");
-      // 可以觸發一個全域事件或導向登入
     }
 
-    // 這裡統一抽出後端 ErrorResponse 的 message
     const errorMsg = data?.message || "伺服器連線異常";
     return Promise.reject(new Error(errorMsg));
   },

@@ -10,19 +10,19 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
-      meta: { requiresAuth: false }, // 公開頁面
+      meta: { requiresAuth: false },
     },
     {
       path: "/register",
       name: "register",
       component: () => import("../views/RegisterView.vue"),
-      meta: { requiresAuth: false }, // 公開頁面
+      meta: { requiresAuth: false },
     },
     {
       path: "/",
       name: "home",
       component: () => import("../views/HomeView.vue"),
-      meta: { requiresAuth: true }, // 需要登入
+      meta: { requiresAuth: true },
     },
     {
       path: "/post/:id",
@@ -53,7 +53,7 @@ const router = createRouter({
       props: true,
       meta: { requiresAuth: true },
     },
-    // 捕獲所有未定義的路由，導向首頁
+    // 捕獲所有未定義的路由
     {
       path: "/:pathMatch(.*)*",
       redirect: "/",
@@ -61,25 +61,24 @@ const router = createRouter({
   ],
 });
 
-// --- 核心邏輯：全局路由守衛 ---
 router.beforeEach((to, from, next) => {
   // 從 localStorage 取得 token
   const token = localStorage.getItem("token");
 
-  // 1. 如果進入的是需要驗證的頁面 (requiresAuth) 且沒有 token
+  //  如果進入的是需要驗證的頁面 (requiresAuth) 且沒有 token
   if (to.meta.requiresAuth !== false && !token) {
-    // 這裡我們假設預設所有頁面都需要登入，除非 meta.requiresAuth 明確設為 false
+    // 這裡我們假設預設所有頁面都需要登入
     if (to.name !== "login" && to.name !== "register") {
       return next({ name: "login" });
     }
     next();
   }
-  // 2. 如果已經有 token，卻還想去 login 或 register 頁面
+  //  如果已經有 token，卻還想去 login 或 register 頁面
   else if (token && (to.name === "login" || to.name === "register")) {
     // 自動跳轉回首頁
     return next({ name: "home" });
   }
-  // 3. 其他情況正常通行
+  //  其他情況正常通行
   else {
     next();
   }

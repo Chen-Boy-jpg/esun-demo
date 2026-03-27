@@ -1,39 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
-import { LoginRequestSchema } from '../types/auth';
-import { AuthService } from '../services/auth.service';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import { LoginRequestSchema } from "../types/auth";
+import { AuthService } from "../services/auth.service";
 
 const router = useRouter();
-const serverError = ref(''); // 用於顯示後端回傳的錯誤（如：密碼錯誤）
+const serverError = ref("");
 
-// 1. 初始化表單與 Zod 驗證
+// 初始化表單與 Zod 驗證
 const { errors, defineField, handleSubmit, isSubmitting } = useForm({
   validationSchema: toTypedSchema(LoginRequestSchema),
   initialValues: {
-    phone: '',
-    password: ''
-  }
+    phone: "",
+    password: "",
+  },
 });
 
-// 2. 定義欄位（對應 Zod 中的 phone 與 password）
-const [phone, phoneProps] = defineField('phone');
-const [password, passwordProps] = defineField('password');
+//  定義欄位（對應 Zod 中的 phone 與 password）
+const [phone, phoneProps] = defineField("phone");
+const [password, passwordProps] = defineField("password");
 
-// 3. 處理登入提交
+//  處理登入提交
 const onSubmit = handleSubmit(async (values) => {
   try {
-    serverError.value = '';
-    // 呼叫 AuthService.login，它內部已經處理好 localStorage.setItem('token')
+    serverError.value = "";
+
     await AuthService.login(values);
-    
-    // 登入成功跳轉
-    router.push('/');
+
+    router.push("/");
   } catch (err: any) {
-    // 顯示後端噴出來的錯誤訊息（例如：該手機號碼尚未註冊）
-    serverError.value = err.message || '登入失敗，請稍後再試';
+    serverError.value = err.message || "登入失敗，請稍後再試";
   }
 });
 </script>
@@ -49,9 +47,9 @@ const onSubmit = handleSubmit(async (values) => {
       <form @submit="onSubmit" class="login-form">
         <div class="form-item">
           <label>手機號碼</label>
-          <input 
-            v-model="phone" 
-            v-bind="phoneProps" 
+          <input
+            v-model="phone"
+            v-bind="phoneProps"
             placeholder="請輸入手機號碼"
             :class="{ 'input-error': errors.phone }"
           />
@@ -60,9 +58,9 @@ const onSubmit = handleSubmit(async (values) => {
 
         <div class="form-item">
           <label>密碼</label>
-          <input 
-            v-model="password" 
-            v-bind="passwordProps" 
+          <input
+            v-model="password"
+            v-bind="passwordProps"
             type="password"
             placeholder="請輸入密碼"
             :class="{ 'input-error': errors.password }"
@@ -75,7 +73,7 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
 
         <button type="submit" class="submit-btn" :disabled="isSubmitting">
-          {{ isSubmitting ? '驗證中...' : '登入' }}
+          {{ isSubmitting ? "驗證中..." : "登入" }}
         </button>
 
         <div class="auth-footer">
@@ -108,8 +106,14 @@ const onSubmit = handleSubmit(async (values) => {
   margin-bottom: 2rem;
 }
 
-.logo h2 { color: #2c3e50; margin-bottom: 0.5rem; }
-.logo p { color: #7f8c8d; font-size: 0.9rem; }
+.logo h2 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+.logo p {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
 
 .form-item {
   margin-bottom: 1.5rem;
@@ -138,7 +142,9 @@ input:focus {
   border-color: #42b983;
 }
 
-.input-error { border-color: #e74c3c; }
+.input-error {
+  border-color: #e74c3c;
+}
 
 .error-msg {
   color: #e74c3c;
@@ -170,8 +176,13 @@ input:focus {
   transition: background 0.2s;
 }
 
-.submit-btn:hover { background-color: #3aa876; }
-.submit-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+.submit-btn:hover {
+  background-color: #3aa876;
+}
+.submit-btn:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
 
 .auth-footer {
   margin-top: 1.5rem;

@@ -8,6 +8,6 @@ const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
-app.use(VueQueryPlugin); // 注入 Vue Query
+app.use(VueQueryPlugin);
 
 app.mount("#app");

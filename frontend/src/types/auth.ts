@@ -6,7 +6,7 @@ export const LoginRequestSchema = z.object({
   password: z.string().min(6, "密碼至少需要 6 個字元"),
 });
 
-// 註冊請求驗證 (包含密碼二次確認)
+// 註冊請求驗證
 export const RegisterRequestSchema = z
   .object({
     userName: z.string().min(2, "用戶名至少 2 個字元").max(20),
@@ -17,10 +17,10 @@ export const RegisterRequestSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "兩次輸入的密碼不一致",
-    path: ["confirmPassword"], // 錯誤訊息會綁在 confirmPassword 欄位
+    path: ["confirmPassword"],
   });
 
-// 認證成功回應 (JWT Token)
+//JWT Token回應驗證
 export const AuthResponseSchema = z.object({
   token: z.string(),
   message: z.string().optional(),

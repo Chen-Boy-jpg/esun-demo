@@ -7,7 +7,6 @@ import type {
 } from "../types/auth";
 
 // 建立一個響應式的狀態，初始值讀取 localStorage
-// 放在 export 外面作為私有變數，確保單一數據源
 const _isAuthenticated = ref(!!localStorage.getItem("token"));
 
 export const AuthService = {
@@ -20,21 +19,19 @@ export const AuthService = {
       const res = await api.post<AuthResponse>("/auth/login", data);
 
       if (res.data && res.data.token) {
-        // 1. 存入 LocalStorage
+        //  存入 LocalStorage
         localStorage.setItem("token", res.data.token);
 
-        // 2. 存入使用者名稱 (如果後端有回傳的話)
+        //  存入使用者名稱 (如果後端有回傳的話)
         if (res.data.userName) {
           localStorage.setItem("userName", res.data.userName);
         }
 
-        // 3. 【關鍵】更新響應式狀態，觸發 Navbar 更新
         _isAuthenticated.value = true;
       }
 
       return res.data;
     } catch (error: any) {
-      // 統一處理錯誤噴出，讓 LoginView 能 catch 到
       throw error.response?.data || error.message || "登入失敗";
     }
   },

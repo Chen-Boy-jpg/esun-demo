@@ -1,44 +1,47 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
-import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
-import * as zod from 'zod';
-import { PostService } from '../services/post.service';
-import { AuthService } from '../services/auth.service';
+import { ref, computed, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import * as zod from "zod";
+import { PostService } from "../services/post.service";
+import { AuthService } from "../services/auth.service";
 
 const router = useRouter();
 const queryClient = useQueryClient();
 
-// 1. 狀態管理：使用者資訊、圖片預覽與檔案
-const currentUserName = computed(() => AuthService.getUserName() || '使用者');
+//  狀態管理：使用者資訊、圖片預覽與檔案
+const currentUserName = computed(() => AuthService.getUserName() || "使用者");
 const imagePreview = ref<string | null>(null);
 const selectedFile = ref<File | null>(null);
 
-// 2. 表單驗證 Schema
+//  表單驗證 Schema
 const schema = toTypedSchema(
   zod.object({
-    content: zod.string().min(1, '內容不能為空').max(500, '內容太長了 (上限 500 字)')
-  })
+    content: zod
+      .string()
+      .min(1, "內容不能為空")
+      .max(500, "內容太長了 (上限 500 字)"),
+  }),
 );
 
 const { errors, defineField, handleSubmit } = useForm({
   validationSchema: schema,
-  initialValues: { content: '' }
+  initialValues: { content: "" },
 });
 
-const [content, contentProps] = defineField('content');
+const [content, contentProps] = defineField("content");
 
-// 3. 處理圖片選取與預覽
+//  處理圖片選取與預覽
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
-    
+
     // 限制檔案大小 (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('圖片大小不能超過 5MB');
+      alert("圖片大小不能超過 5MB");
       return;
     }
 
@@ -56,29 +59,28 @@ const removeImage = () => {
   imagePreview.value = null;
 };
 
-// 4. 發布貼文的 Mutation
+//  發布貼文的 Mutation
 const { mutate: createPost, isPending } = useMutation({
-  mutationFn: (payload: { content: string; image?: File }) => PostService.createPost(payload),
+  mutationFn: (payload: { content: string; image?: File }) =>
+    PostService.createPost(payload),
   onSuccess: () => {
-    // 【核心修改點】：不使用 router.push，改用 window.location.href
-    // 這會強制頁面重新整理，解決圖片沒即時跑出來的問題
     setTimeout(() => {
-      window.location.href = '/'; 
+      window.location.href = "/";
     }, 500);
   },
   onError: (error: any) => {
-    alert(error.response?.data || error.message || '發布失敗，請稍後再試');
-  }
+    alert(error.response?.data || error.message || "發布失敗，請稍後再試");
+  },
 });
 
 const onSubmit = handleSubmit((values) => {
   createPost({
     content: values.content,
-    image: selectedFile.value || undefined
+    image: selectedFile.value || undefined,
   });
 });
 
-// 生命週期：組件銷毀時釋放記憶體中的圖片連結
+//組件銷毀時釋放記憶體中的圖片連結
 onUnmounted(() => {
   if (imagePreview.value) URL.revokeObjectURL(imagePreview.value);
 });
@@ -87,7 +89,6 @@ onUnmounted(() => {
 <template>
   <div class="pc-app-bg">
     <div class="pc-layout-container">
-      
       <aside class="side-panel left-side">
         <button class="glass-btn" @click="router.back()">
           <span class="icon">←</span>
@@ -111,8 +112,8 @@ onUnmounted(() => {
 
           <div class="editor-body">
             <form @submit.prevent="onSubmit">
-              <textarea 
-                v-model="content" 
+              <textarea
+                v-model="content"
                 v-bind="contentProps"
                 placeholder="分享你的想法..."
                 class="rich-textarea"
@@ -124,7 +125,9 @@ onUnmounted(() => {
               <transition name="fade">
                 <div v-if="imagePreview" class="image-preview-wrapper">
                   <img :src="imagePreview" alt="Preview" class="preview-img" />
-                  <button type="button" @click="removeImage" class="remove-btn">✕</button>
+                  <button type="button" @click="removeImage" class="remove-btn">
+                    ✕
+                  </button>
                 </div>
               </transition>
 
@@ -136,25 +139,45 @@ onUnmounted(() => {
 
           <footer class="editor-footer">
             <div class="footer-left">
-              <label for="img-upload" class="upload-label" :class="{ 'disabled': isPending }">
+              <label
+                for="img-upload"
+                class="upload-label"
+                :class="{ disabled: isPending }"
+              >
                 <span class="icon">🖼️</span>
-                <span>{{ selectedFile ? '已選擇圖片' : '加入圖片' }}</span>
+                <span>{{ selectedFile ? "已選擇圖片" : "加入圖片" }}</span>
               </label>
-              <input id="img-upload" type="file" accept="image/*" @change="onFileChange" hidden :disabled="isPending" />
+              <input
+                id="img-upload"
+                type="file"
+                accept="image/*"
+                @change="onFileChange"
+                hidden
+                :disabled="isPending"
+              />
             </div>
 
             <div class="footer-right">
-              <span class="counter" :class="{ 'warning': (content?.length || 0) > 450 }">
+              <span
+                class="counter"
+                :class="{ warning: (content?.length || 0) > 450 }"
+              >
                 {{ content?.length || 0 }} / 500
               </span>
               <div class="action-btns">
-                <button class="btn-cancel" @click="router.back()" :disabled="isPending">取消</button>
-                <button 
-                  class="btn-publish" 
-                  @click="onSubmit" 
+                <button
+                  class="btn-cancel"
+                  @click="router.back()"
+                  :disabled="isPending"
+                >
+                  取消
+                </button>
+                <button
+                  class="btn-publish"
+                  @click="onSubmit"
                   :disabled="isPending || !content"
                 >
-                  {{ isPending ? '發布中...' : '發布貼文' }}
+                  {{ isPending ? "發布中..." : "發布貼文" }}
                 </button>
               </div>
             </div>
@@ -172,7 +195,6 @@ onUnmounted(() => {
           </ul>
         </div>
       </aside>
-
     </div>
   </div>
 </template>
@@ -237,15 +259,27 @@ onUnmounted(() => {
 }
 
 .avatar-box {
-  width: 48px; height: 48px;
+  width: 48px;
+  height: 48px;
   background: #10b981;
-  color: white; border-radius: 14px;
-  display: grid; place-items: center;
-  font-weight: 800; font-size: 1.2rem;
+  color: white;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1.2rem;
 }
 
-.username { display: block; font-weight: 700; color: #1e293b; text-align: left; }
-.status { font-size: 0.8rem; color: #94a3b8; }
+.username {
+  display: block;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: left;
+}
+.status {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
 
 .editor-body {
   padding: 20px 40px;
@@ -282,11 +316,15 @@ onUnmounted(() => {
 
 .remove-btn {
   position: absolute;
-  top: 10px; right: 10px;
+  top: 10px;
+  right: 10px;
   background: rgba(0, 0, 0, 0.6);
-  color: white; border: none;
-  width: 32px; height: 32px;
-  border-radius: 50%; cursor: pointer;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 .editor-footer {
@@ -323,20 +361,37 @@ onUnmounted(() => {
   gap: 20px;
 }
 
-.counter { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
-.counter.warning { color: #f59e0b; }
+.counter {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.counter.warning {
+  color: #f59e0b;
+}
 
-.action-btns { display: flex; gap: 12px; }
+.action-btns {
+  display: flex;
+  gap: 12px;
+}
 
 .btn-cancel {
-  background: none; border: none; color: #94a3b8;
-  font-weight: 600; cursor: pointer;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .btn-publish {
-  background: #10b981; color: white; border: none;
-  padding: 10px 24px; border-radius: 10px;
-  font-weight: 700; cursor: pointer; transition: 0.2s;
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .btn-publish:hover:not(:disabled) {
@@ -351,13 +406,26 @@ onUnmounted(() => {
 
 /* 提示卡片 */
 .tips-card {
-  background: white; padding: 24px; border-radius: 20px;
-  text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 }
 
-.tips-card h4 { margin-top: 0; color: #1e293b; }
-.tips-card ul { padding-left: 20px; color: #64748b; font-size: 0.9rem; }
-.tips-card li { margin-bottom: 10px; line-height: 1.4; }
+.tips-card h4 {
+  margin-top: 0;
+  color: #1e293b;
+}
+.tips-card ul {
+  padding-left: 20px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+.tips-card li {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
 
 /* 響應式優化 */
 @media (max-width: 1024px) {
@@ -369,8 +437,19 @@ onUnmounted(() => {
   }
 }
 
-.error-text { color: #ef4444; font-size: 0.85rem; margin-top: 10px; text-align: left; }
+.error-text {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  text-align: left;
+}
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
