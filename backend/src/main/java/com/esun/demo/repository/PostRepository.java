@@ -10,19 +10,19 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    // 1. 新增貼文
+    // 新增貼文
     @Procedure(procedureName = "create_post")
     void createPost(String p_phone, String p_content, String p_image_url);
 
-    // 2. 修改貼文
+    // 修改貼文
     @Procedure(procedureName = "update_post")
     void updatePost(Long p_post_id, String p_phone, String p_content, String p_image_url);
 
-    // 3. 刪除貼文
+    // 刪除貼文
     @Procedure(procedureName = "delete_post")
     void deletePost(Long p_post_id, String p_phone);
 
-    // 4. 列出貼文 (使用剛才建立的 Function)
+    // 列出貼文 (使用剛才建立的 Function)
     @Query(value = "SELECT * FROM get_all_posts()", nativeQuery = true)
     List<Object[]> findAllPostsViaFunction();
 }

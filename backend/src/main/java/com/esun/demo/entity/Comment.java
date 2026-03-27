@@ -19,12 +19,10 @@ public class Comment {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // 留言屬於哪篇貼文
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // 誰留言的
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

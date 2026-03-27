@@ -11,7 +11,6 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    // 舊版 0.9.1 可以直接用字串當密鑰
     private String secret = "mySecretKeyForEsunDemoProject2026";
     private long expiration = 86400000; // 24 小時
 

@@ -30,15 +30,14 @@ public class CommentService {
     }
 
     public List<CommentResponse> getAllComments() {
-        // 現在 results 是 List<Comment>，裡面的 result 是 Comment 物件
+
         List<Comment> results = commentRepository.findAllCommentsNative();
 
         return results.stream().map(comment -> new CommentResponse(
-                comment.getCommentId(), // comment_id
-                comment.getPost().getPostId(), // post_id (從關聯的 Post 物件取得)
-                comment.getUser().getUserId(), // user_id (從關聯的 User 物件取得)
-                comment.getContent(), // content
-                comment.getCreatedAt() // created_at (已經是 LocalDateTime)
-        )).toList();
+                comment.getCommentId(),
+                comment.getPost().getPostId(),
+                comment.getUser().getUserId(),
+                comment.getContent(),
+                comment.getCreatedAt())).toList();
     }
 }

@@ -18,7 +18,7 @@ public class PostController {
     private PostService postService;
 
     /**
-     * 1. 取得所有貼文 (公開接口)
+     * 取得所有貼文 (公開接口)
      * GET /api/posts/list
      */
     @GetMapping("/list")
@@ -27,9 +27,8 @@ public class PostController {
     }
 
     /**
-     * 2. 發布新貼文 (需要 Token)
+     * 發布新貼文 (需要 Token)
      * POST /api/posts/create
-     * 必須使用 multipart/form-data
      */
     @PostMapping(value = "/create", consumes = { "multipart/form-data" })
     public ResponseEntity<String> createPost(@ModelAttribute PostRequest req) {
@@ -41,9 +40,8 @@ public class PostController {
     }
 
     /**
-     * 3. 更新貼文 (需要 Token + 擁有者權限)
+     * 更新貼文 (需要 Token + 擁有者權限)
      * PUT /api/posts/{id}
-     * 必須使用 multipart/form-data
      */
     @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<String> updatePost(
@@ -57,7 +55,7 @@ public class PostController {
     }
 
     /**
-     * 4. 刪除貼文 (需要 Token + 擁有者權限)
+     * 刪除貼文 (需要 Token + 擁有者權限)
      * DELETE /api/posts/{id}
      */
     @DeleteMapping("/{id}")

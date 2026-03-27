@@ -28,18 +28,18 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    // 1. 註冊：改用預存程序
-    @Transactional // 呼叫 Procedure 必須加 Transactional
+    // 註冊：
+    @Transactional
     public String registerUser(String name, String phone, String rawPassword, String email) {
         if (userRepository.existsByPhoneNumber(phone)) {
             return "該手機號碼已註冊";
         }
 
-        // 先進行密碼加密
+        // 進行密碼加密
         String encodedPassword = passwordEncoder.encode(rawPassword);
 
         try {
-            // 呼叫 Repository 裡的 @Procedure
+
             userRepository.registerUser(
                     name,
                     phone,
@@ -53,7 +53,7 @@ public class UserService {
         }
     }
 
-    // 2. 登入：保持原樣 (因為是 SELECT 操作)
+    // 登入
     public String login(String phone, String password) {
         Optional<User> userOpt = userRepository.findByPhoneNumber(phone);
         if (userOpt.isPresent()) {
@@ -65,15 +65,15 @@ public class UserService {
         return "手機號碼或密碼錯誤";
     }
 
-    // 3. 更新簡介與圖片：如果也要用 SP，建議在 SQL 寫對應的 update 邏輯
-    // 這裡示範呼叫「update_biography」之類的 SP (需先在 DDL 定義)
+    // 更新簡介與圖片
+
     @Transactional
     public String updateFullProfileViaSP(String phone, UpdateProfileRequest req) {
         if (!userRepository.existsByPhoneNumber(phone)) {
             return "使用者不存在";
         }
 
-        // 1. 處理密碼加密 (從 req 拿資料)
+        // 1. 處理密碼加密
         String encodedPassword = (req.getPassword() != null && !req.getPassword().isEmpty())
                 ? passwordEncoder.encode(req.getPassword())
                 : null;
@@ -95,7 +95,6 @@ public class UserService {
             }
         }
 
-        // 3. 呼叫 Repository 中的 SP (對應你剛才改過的 5 個參數版 SP)
         try {
             userRepository.updateUserProfile(
                     phone,
@@ -109,8 +108,6 @@ public class UserService {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             }
 
-            // 印出錯誤到 Log，方便我們看真兇
-            System.err.println("更新失敗真兇: " + e.getMessage());
             return "更新失敗：" + e.getMessage();
         }
     }

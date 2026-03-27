@@ -19,7 +19,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest req) {
-        // 直接調用，如果失敗（如重複註冊），Service 會拋出 Exception，由 GlobalExceptionHandler 攔截
+        // 直接調用，如果失敗（如重複註冊），Service 會拋出 Exception
         String result = userService.registerUser(
                 req.getUserName(),
                 req.getPhoneNumber(),
@@ -31,7 +31,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest req) {
-        // 如果登入失敗，userService.login 內部應該拋出自定義異常或讓預存程序報錯
+
         String token = userService.login(req.getPhone(), req.getPassword());
 
         return ResponseEntity.ok(Map.of(

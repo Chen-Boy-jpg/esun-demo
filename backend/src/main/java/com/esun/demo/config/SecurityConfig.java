@@ -35,30 +35,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. 關閉 CSRF
+                // 關閉 CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // 2. 加入 CORS 配置 (選配，但建議加上)
+                // 加入 CORS 配置 (選配，但建議加上)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 3. 異常處理
-                // .exceptionHandling(exception -> exception
-                // .authenticationEntryPoint(authException))
+                // 異常處理
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authException))
 
-                // 4. 路徑權限設定
+                // 路徑權限設定
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll() // 圖片路徑
                         .requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/comments/**").permitAll()
                         .anyRequest().authenticated())
 
-                // 5. JWT 過濾器順序
+                // JWT 過濾器順序
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // CORS 設定：允許來自前端容器的請求
+    // CORS 設定
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

@@ -8,6 +8,6 @@ public class UserUpdateRequest {
     private String userName;
     private String email;
     private String biography;
-    private String password; // 如果有傳入才修改
-    private MultipartFile coverImage; // 處理圖片檔案
+    private String password;
+    private MultipartFile coverImage;
 }

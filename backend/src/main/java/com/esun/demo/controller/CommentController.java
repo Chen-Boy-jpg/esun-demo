@@ -18,14 +18,14 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-    // 1. 列出所有評論 (所有人皆可查看)
+    // 列出所有評論 (所有人皆可查看)
     @GetMapping
     public ResponseEntity<List<CommentResponse>> listAll() {
-        // 在 Service 裡將 List<Object[]> 轉成 List<CommentResponse>
+
         return ResponseEntity.ok(commentService.getAllComments());
     }
 
-    // 2. 新增評論 (需登入)
+    // 新增評論 (需登入)
     @PostMapping("/{postId}")
     public ResponseEntity<?> create(
             @PathVariable Long postId,
@@ -37,7 +37,7 @@ public class CommentController {
         return ResponseEntity.ok(Map.of("message", "評論成功"));
     }
 
-    // 3. 修改評論 (需登入且為本人)
+    // 修改評論 (需登入且為本人)
     @PutMapping("/{commentId}")
     public ResponseEntity<?> update(
             @PathVariable Long commentId,
@@ -49,7 +49,7 @@ public class CommentController {
         return ResponseEntity.ok(Map.of("message", "修改成功"));
     }
 
-    // 4. 刪除評論 (需登入且為本人)
+    // 刪除評論 (需登入且為本人)
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> delete(
             @PathVariable Long commentId,

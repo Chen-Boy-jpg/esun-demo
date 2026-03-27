@@ -26,7 +26,7 @@ public class UserController {
     private UserRepository userRepository;
 
     @Autowired
-    private UserService userService; // 2. 核心修正：加入這兩行
+    private UserService userService;
 
     @GetMapping("/me")
     public Object getMyProfile() {
@@ -37,17 +37,17 @@ public class UserController {
         Optional<User> user = userRepository.findByPhoneNumber(phone);
 
         if (user.isPresent()) {
-            return user.get(); // 回傳使用者物件（包含簡介、姓名等）
+            return user.get(); // 回傳使用者物件
         }
         return "找不到使用者";
     }
 
     @PutMapping(value = "/update-profile", consumes = { "multipart/form-data" })
     public ResponseEntity<String> updateFullProfile(@ModelAttribute UpdateProfileRequest req) {
-        // 1. 從 SecurityContext 取得目前登入者手機
+        // 從 SecurityContext 取得目前登入者手機
         String phone = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. 呼叫 Service (傳入 2 個參數，與 Service 定義對齊)
+        // 呼叫 Service
         String result = userService.updateFullProfileViaSP(phone, req);
 
         return ResponseEntity.ok(result);

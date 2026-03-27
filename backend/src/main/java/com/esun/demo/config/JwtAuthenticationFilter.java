@@ -22,16 +22,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. 取得請求路徑
         String path = request.getServletPath();
 
-        // 2. ⚡ 如果是公開路徑，直接放行，不跑後面的 Token 檢查邏輯
+        // 如果是公開路徑，直接放行，不跑後面的 Token 檢查邏輯
         if (path.contains("/auth/") || path.startsWith("/uploads/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // --- 以下是原本的 Token 檢查邏輯 ---
+        // Token 檢查邏輯 ---
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
